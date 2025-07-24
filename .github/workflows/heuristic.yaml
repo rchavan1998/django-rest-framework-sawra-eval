@@ -1,0 +1,34 @@
+name: CI
+on: push
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version:
+          - '3.9'
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          apt install -y adduser base-files bash bash-completion binutils command-not-found coreutils cpp-11 cron debconf distro-info-data e2fsprogs fuse3 gcc gcc-11 gettext-base hdparm keyutils libattr1:amd64 libaudit-common libbinutils:amd64 libc-bin libc6-dev:amd64 libc6:amd64 libctf0:amd64 libgcc-11-dev:amd64 libgmp10:amd64 libisl23:amd64 libmagic1:amd64 libmecab2:amd64 libmpc3:amd64 libmpfr6:amd64 libpam-runtime libpython3.9-dev:amd64 libpython3.9-minimal:amd64 libpython3.9-stdlib:amd64 libsensors-config libtirpc-common libyaml-0-2:amd64 libyaml-dev:amd64 libzstd1:amd64 linux-libc-dev:amd64 locales login logrotate lsb-release ltrace mailcap man-db media-types multipath-tools nano ncurses-base netbase nftables openssl overlayroot procps python3-zope.interface python3.9-distutils python3.9-minimal rsyslog screen sudo tar tzdata ucf unixodbc-common usb-modeswitch walinuxagent wget
+          pip install tox==4.28.0
+      - run: |
+          pip install --upgrade pip setuptools virtualenv wheel
+          pip install --upgrade tox
+      - run: |
+          tox run -f py$(echo '3.9' | tr -d . | cut -f 1 -d '-')
+      - run: |
+          tox -e base,dist,docs
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONHASHSEED: '3915667231'
+      PYTHONIOENCODING: utf-8
+      PYTHONNOUSERSITE: '1'
+      PYTHONWARNINGS: once
