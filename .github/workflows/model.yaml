@@ -1,0 +1,25 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools virtualenv wheel
+          pip install --upgrade tox
+
+      - name: Run tests
+        run: |
+          tox run -f py$(echo '3.9' | tr -d . | cut -f 1 -d '-')
+          tox -e base,dist,docs
