@@ -1,0 +1,30 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version:
+          - '3.9'
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install -y libpython3.9-dev:amd64
+          pip install tox==4.28.0
+      - run: |
+          pip install --upgrade pip setuptools virtualenv wheel
+          pip install --upgrade tox
+      - run: |
+          tox run -f py$(echo '3.9' | tr -d . | cut -f 1 -d '-')
+      - run: |
+          tox -e base,dist,docs
